@@ -42,17 +42,20 @@ unsigned long  mk1_obstacle_currentMillis = 0;
 unsigned long  mk1_previous_obstacle_millis = 0;
 
 //piezo element
-int mk1_speakerPin = A5;
+int            mk1_speakerPin = A5;
 
 //Time of flight sensor
-int mk1_tofSensor = A1;
-int mk1_tof;
+int            mk1_tofSensor = A1;
+int            mk1_tof;
+
+//cruise speed
+int            mk1_cruiseSpeed = 165;
 
 //timers
-Timer          mk1_obstacleTimer(25, detectObstacle);
-Timer          mk1_cliffTimer(25, detectCliff);
-Timer          mk1_sirenTimer(100, runSirens);
-Timer          mk1_beepTimer(1000, runBeep);
+Timer          mk1_obstacleTimer(50, detectObstacle);
+Timer          mk1_cliffTimer(50, detectCliff);
+Timer          mk1_sirenTimer(250, runSirens);
+Timer          mk1_beepTimer(500, runBeep);
 
 void setup(){
   //enable manual control through the button
@@ -165,7 +168,7 @@ bool avoidObstacleSweep(){
 }
 void avoidObstacleSweepAction(){
   motorController.stop();
-  motorController.reverse(100);
+  /*motorController.reverse(100);*/
   delay(100);
   motorController.stop();
   int right_90_distance, left_90_distance;
@@ -182,15 +185,17 @@ void avoidObstacleSweepAction(){
   mk1_servo.write(90);
   delay(500);
   mk1_servo.detach();
-  if(right_90_distance > left_90_distance){
-    motorController.right(255);
+  if(left_90_distance > right_90_distance){
+    mk1_automated_turn = 16; //set the next automated turn to be left
+    motorController.left(255);
     delay(300);
   }else{
-    motorController.left(255);
+    mk1_automated_turn = 0; //set the next automated turn to be right
+    motorController.right(255);
     delay(300);
   }
   resetServo();
-  motorController.forward(255);
+  motorController.forward(mk1_cruiseSpeed);
   delay(300);
   mk1_command = true;
   mk1_last_obstacle_avoided = millis();
@@ -269,7 +274,7 @@ bool cruise(){
 }
 
 bool cruiseAction(){
-  motorController.forward(255);
+  motorController.forward(mk1_cruiseSpeed);
   colorAll(strip.Color(128, 128, 128), 1); //turn on the headlight on white when driving
 }
 
@@ -287,7 +292,8 @@ int findDistance(){
 
 void detectObstacle(){
   int inches = findDistance();
-  if(inches <= 90){
+  Serial.println(inches);
+  if(inches <= 65){
     mk1_obstacleDetected = true;
   }else{
     mk1_obstacleDetected = false;
@@ -335,7 +341,7 @@ void runSirens(){
 
 void runBeep(){
   if(mk1_obstacleDetected && mk1_command == true && mk1_direction == "c"){
-    tone(mk1_speakerPin, 600, 200);
+    tone(mk1_speakerPin, 1200, 200);
   }
 }
 
