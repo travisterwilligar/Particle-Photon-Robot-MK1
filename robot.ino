@@ -12,11 +12,19 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 void colorAll(uint32_t c, uint8_t wait);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
-//instance of motor controller
-Motors motorController(D4, TX, D2, D3, RX, D5, D6);
+//pins
+#define          MK1_MANUALCONTROLBUTTON A2
+#define          MK1_SERVOPIN WKP
+#define          MK1_DISTANCESENSOR A0
+#define          MK1_TOFSENSOR A1
+#define          MK1_SPEAKERPIN A5
 
-//instance of accelerometer
-MMA8452Q accel;
+//collision detection
+#define          MK1_MINCOLLISIONDISTANCE 75
+#define          MK1_MINSWEEPCOLLISIONTIMER 2500
+
+//cruise speed
+#define          MK1_CRUISESPEED 200
 
 //basic mk1 commands
 bool           mk1_command = false;
@@ -24,16 +32,6 @@ bool           mk1_obstacleDetected = false;
 bool           mk1_cliffDetected = false;
 String         mk1_direction;
 int            mk1_automated_turn = 0;
-
-//servo
-int mk1_servoPin = WKP;
-Servo mk1_servo;
-
-//manual start button
-int            mk1_manualControlButton = A2;
-volatile long  mk1_manualControlButton_lastPress = 0;
-
-//alternate siren color
 int            mk1_last_siren_mode = 1;
 
 //obstacle sweep globals
@@ -41,15 +39,8 @@ unsigned long  mk1_last_obstacle_avoided = 0;
 unsigned long  mk1_obstacle_currentMillis = 0;
 unsigned long  mk1_previous_obstacle_millis = 0;
 
-//piezo element
-int            mk1_speakerPin = A5;
-
-//Time of flight sensor
-int            mk1_tofSensor = A1;
-int            mk1_tof;
-
-//cruise speed
-int            mk1_cruiseSpeed = 165;
+//manual start button
+volatile long    mk1_manualControlButton_lastPress = 0;
 
 //timers
 Timer          mk1_obstacleTimer(50, detectObstacle);
@@ -57,9 +48,22 @@ Timer          mk1_cliffTimer(50, detectCliff);
 Timer          mk1_sirenTimer(250, runSirens);
 Timer          mk1_beepTimer(500, runBeep);
 
+//servo
+Servo mk1_servo;
+
+//instance of accelerometer
+MMA8452Q accel;
+double         mk1_accelThreshold = 0.7;
+
+//Time of flight sensor
+int            mk1_tof;
+
+//instance of motor controller
+Motors motorController(D4, TX, D2, D3, RX, D5, D6);
+
 void setup(){
   //enable manual control through the button
-  pinMode(mk1_manualControlButton, INPUT_PULLUP);
+  pinMode(MK1_MANUALCONTROLBUTTON, INPUT_PULLUP);
 
   //reset the position of the servo
   resetServo();
@@ -86,11 +90,11 @@ void setup(){
   Particle.connect();
 
   //startup sound
-  tone(mk1_speakerPin, 500, 200);
+  tone(MK1_SPEAKERPIN, 500, 200);
   delay(100);
-  tone(mk1_speakerPin, 1000, 200);
+  tone(MK1_SPEAKERPIN, 1000, 200);
   delay(100);
-  tone(mk1_speakerPin, 1500, 200);
+  tone(MK1_SPEAKERPIN, 1500, 200);
 }
 void loop(){
   bool manualControlCommand = manualControl();
@@ -117,10 +121,10 @@ void loop(){
 }
 
 bool manualControl(){
-  if(digitalRead(mk1_manualControlButton) == LOW) {
+  if(digitalRead(MK1_MANUALCONTROLBUTTON) == LOW) {
   unsigned long button_press = millis();
-  if(button_press - mk1_manualControlButton_lastPress >= 1500){
-      mk1_manualControlButton_lastPress = button_press;
+  if(button_press -   mk1_manualControlButton_lastPress >= 1500){
+        mk1_manualControlButton_lastPress = button_press;
       return true;
     }else{
       return false;
@@ -141,7 +145,7 @@ void manualControlAction(){
 bool detectImpact(){
    if(mk1_command == true && accel.available() && millis() > 10000){
       accel.read();
-     if(accel.cy < -0.3 || accel.cy > 0.3){
+     if(accel.cy < -mk1_accelThreshold || accel.cy > mk1_accelThreshold){
        Serial.print("impact detected");
        return true;
      }else{
@@ -154,48 +158,71 @@ bool detectImpact(){
 
 void detectImpactAction(){
   motorController.reverse(255);
-  delay(100);
-  delay(350);
+  delay(500);
+  motorController.right(255);
+  delay(500);
 }
 
 bool avoidObstacleSweep(){
   mk1_obstacle_currentMillis = millis();
-  if(mk1_command == true && mk1_obstacle_currentMillis - mk1_last_obstacle_avoided >= 5000 && mk1_obstacleDetected == true){
+  if(mk1_command == true && mk1_obstacle_currentMillis - mk1_last_obstacle_avoided >= MK1_MINSWEEPCOLLISIONTIMER && mk1_obstacleDetected == true){
     return true;
   }else{
     return false;
   }
 }
 void avoidObstacleSweepAction(){
+  int forward_distance, right_45_distance, right_90_distance, left_45_distance, left_90_distance;
+  forward_distance = findDistance();
   motorController.stop();
-  /*motorController.reverse(100);*/
   delay(100);
-  motorController.stop();
-  int right_90_distance, left_90_distance;
-  delay(500);
-  mk1_servo.attach(mk1_servoPin);
+  mk1_servo.attach(MK1_SERVOPIN);
+
   mk1_servo.write(0);
   delay(500);
   left_90_distance = findDistance();
   delay(600);
+
+  mk1_servo.write(45);
+  delay(500);
+  left_45_distance = findDistance();
+  delay(600);
+
+  mk1_servo.write(135);
+  delay(500);
+  right_45_distance = findDistance();
+  delay(600);
+
   mk1_servo.write(180);
   delay(600);
   right_90_distance = findDistance();
   delay(500);
+
   mk1_servo.write(90);
   delay(500);
   mk1_servo.detach();
-  if(left_90_distance > right_90_distance){
+  if(forward_distance >= right_90_distance && forward_distance >= left_90_distance && forward_distance >= left_45_distance && forward_distance >= right_45_distance){
+    motorController.forward(MK1_CRUISESPEED);
+  }
+  if(left_90_distance > right_90_distance && left_90_distance > left_45_distance && left_90_distance > right_45_distance){
     mk1_automated_turn = 16; //set the next automated turn to be left
     motorController.left(255);
+    delay(300);
+  }else if(left_45_distance > right_90_distance && left_45_distance > left_90_distance && left_45_distance > right_45_distance) {
+    mk1_automated_turn = 16; //set the next automated turn to be left
+    motorController.left(255);
+    delay(150);
+  }else if(right_90_distance > right_45_distance && right_90_distance > left_90_distance && right_90_distance > left_45_distance) {
+    mk1_automated_turn = 0; //set the next automated turn to be right
+    motorController.right(255);
     delay(300);
   }else{
     mk1_automated_turn = 0; //set the next automated turn to be right
     motorController.right(255);
-    delay(300);
+    delay(150);
   }
   resetServo();
-  motorController.forward(mk1_cruiseSpeed);
+  motorController.forward(MK1_CRUISESPEED);
   delay(300);
   mk1_command = true;
   mk1_last_obstacle_avoided = millis();
@@ -211,7 +238,7 @@ void avoidObstacleAction(){
   }else{
     motorController.left(255);
   }
-  delay(150);
+  delay(200);
   if(mk1_automated_turn >= 25){
     mk1_automated_turn = 0;
   }else{
@@ -249,6 +276,7 @@ bool avoidCliff(){
 }
 
 void avoidCliffAction(){
+  mk1_automated_turn = 0;
   motorController.reverse(255);
   delay(500);
   motorController.right(255);
@@ -256,7 +284,7 @@ void avoidCliffAction(){
 }
 
 bool detectCliff(){
-  int mk1_tof = digitalRead(mk1_tofSensor);
+  int mk1_tof = digitalRead(MK1_TOFSENSOR);
   //Serial.println(mk1_tof);
   if(mk1_tof == 0){
     mk1_cliffDetected = true;
@@ -274,7 +302,7 @@ bool cruise(){
 }
 
 bool cruiseAction(){
-  motorController.forward(mk1_cruiseSpeed);
+  motorController.forward(MK1_CRUISESPEED);
   colorAll(strip.Color(128, 128, 128), 1); //turn on the headlight on white when driving
 }
 
@@ -286,14 +314,14 @@ int setDirection(String direction){
 
 int findDistance(){
   int sensor, inches, x;
-  sensor = analogRead(A0);  // read the analog output of the EZ1 from analog input 0
+  sensor = analogRead(MK1_DISTANCESENSOR);  // read the analog output of the EZ1 from analog input 0
   return sensor / 2;        // convert the sensor reading to inches
 }
 
 void detectObstacle(){
   int inches = findDistance();
   Serial.println(inches);
-  if(inches <= 65){
+  if(inches <= MK1_MINCOLLISIONDISTANCE){
     mk1_obstacleDetected = true;
   }else{
     mk1_obstacleDetected = false;
@@ -308,7 +336,7 @@ void stop(){
 }
 //set the servo back to middle position
 void resetServo(){
-  mk1_servo.attach(mk1_servoPin);  //Initialize the servo attached to pin D0
+  mk1_servo.attach(MK1_SERVOPIN);  //Initialize the servo attached to pin D0
   mk1_servo.write(90);             //set servo to furthest position
   delay(500);                      //delay to give the servo time to move to its position
   mk1_servo.detach();              //detach the servo to prevent it from jittering
@@ -341,7 +369,7 @@ void runSirens(){
 
 void runBeep(){
   if(mk1_obstacleDetected && mk1_command == true && mk1_direction == "c"){
-    tone(mk1_speakerPin, 1200, 200);
+    tone(MK1_SPEAKERPIN, 1200, 200);
   }
 }
 
