@@ -6,10 +6,10 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 #include "neopixel.h";            // neopixel driver
 
 //neo Pixel Definitions
-#define PIXEL_PIN D7
-#define PIXEL_COUNT 2
-#define PIXEL_TYPE WS2812B
-void colorAll(uint32_t c, uint8_t wait);
+#define          PIXEL_PIN D7
+#define          PIXEL_COUNT 2
+#define          PIXEL_TYPE WS2812B
+void             colorAll(uint32_t c, uint8_t wait);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 //pins
@@ -20,43 +20,43 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 #define          MK1_SPEAKERPIN A5
 
 //collision detection
-#define          MK1_MINCOLLISIONDISTANCE 75
-#define          MK1_MINSWEEPCOLLISIONTIMER 2500
+#define          MK1_MINCOLLISIONDISTANCE 60
+#define          MK1_MINSWEEPCOLLISIONTIMER 7500
 
 //cruise speed
-#define          MK1_CRUISESPEED 200
+#define          MK1_CRUISESPEED 150
 
 //basic mk1 commands
-bool           mk1_command = false;
-bool           mk1_obstacleDetected = false;
-bool           mk1_cliffDetected = false;
-String         mk1_direction;
-int            mk1_automated_turn = 0;
-int            mk1_last_siren_mode = 1;
+bool             mk1_command = false;
+bool             mk1_obstacleDetected = false;
+bool             mk1_cliffDetected = false;
+String           mk1_direction;
+int              mk1_automated_turn = 0;
+int              mk1_last_siren_mode = 1;
 
 //obstacle sweep globals
-unsigned long  mk1_last_obstacle_avoided = 0;
-unsigned long  mk1_obstacle_currentMillis = 0;
-unsigned long  mk1_previous_obstacle_millis = 0;
+unsigned long    mk1_last_obstacle_avoided = 0;
+unsigned long    mk1_obstacle_currentMillis = 0;
+unsigned long    mk1_previous_obstacle_millis = 0;
 
 //manual start button
 volatile long    mk1_manualControlButton_lastPress = 0;
 
 //timers
-Timer          mk1_obstacleTimer(50, detectObstacle);
-Timer          mk1_cliffTimer(50, detectCliff);
-Timer          mk1_sirenTimer(250, runSirens);
-Timer          mk1_beepTimer(500, runBeep);
+Timer            mk1_obstacleTimer(50, detectObstacle);
+Timer            mk1_cliffTimer(50, detectCliff);
+Timer            mk1_sirenTimer(250, runSirens);
+Timer            mk1_beepTimer(500, runBeep);
 
 //servo
 Servo mk1_servo;
 
 //instance of accelerometer
-MMA8452Q accel;
-double         mk1_accelThreshold = 0.7;
+MMA8452Q         accel;
+double           mk1_accelThreshold = 0.7;
 
 //Time of flight sensor
-int            mk1_tof;
+int              mk1_tof;
 
 //instance of motor controller
 Motors motorController(D4, TX, D2, D3, RX, D5, D6);
@@ -212,14 +212,14 @@ void avoidObstacleSweepAction(){
     mk1_automated_turn = 16; //set the next automated turn to be left
     motorController.left(255);
     delay(150);
-  }else if(right_90_distance > right_45_distance && right_90_distance > left_90_distance && right_90_distance > left_45_distance) {
-    mk1_automated_turn = 0; //set the next automated turn to be right
-    motorController.right(255);
-    delay(300);
-  }else{
+  }else if(right_45_distance > right_90_distance && right_45_distance > left_90_distance && right_45_distance > left_45_distance) {
     mk1_automated_turn = 0; //set the next automated turn to be right
     motorController.right(255);
     delay(150);
+  }else{
+    mk1_automated_turn = 0; //set the next automated turn to be right
+    motorController.right(255);
+    delay(300);
   }
   resetServo();
   motorController.forward(MK1_CRUISESPEED);
