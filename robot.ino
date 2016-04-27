@@ -20,11 +20,11 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 #define          MK1_SPEAKERPIN A5
 
 //collision detection
-#define          MK1_MINCOLLISIONDISTANCE 60
+#define          MK1_MINCOLLISIONDISTANCE 70
 #define          MK1_MINSWEEPCOLLISIONTIMER 7500
 
 //cruise speed
-#define          MK1_CRUISESPEED 150
+#define          MK1_CRUISESPEED 180
 
 //basic mk1 commands
 bool             mk1_command = false;
