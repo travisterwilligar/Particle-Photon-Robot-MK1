@@ -24,7 +24,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 #define          MK1_MINSWEEPCOLLISIONTIMER 7500
 
 //cruise speed
-#define          MK1_CRUISESPEED 180
+#define          MK1_CRUISESPEED 200
 
 //basic mk1 commands
 bool             mk1_command = false;
