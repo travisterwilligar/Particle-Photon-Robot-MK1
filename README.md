@@ -1,6 +1,8 @@
-#particle photon robot MK1
+#Particle Photon Robot MK1
 
 Mk1 is a behavior-based robotic rover that implements a simplified [subsumption architecture](https://en.wikipedia.org/wiki/Subsumption_architecture).
+
+## Behaviors ##
 
 MK1 has the following behaviors:
 
@@ -52,7 +54,7 @@ Modes are higher-level actions that implement a subset of the available behavior
 	 - Headlights
 	 - Sirens
 
-##hardware##
+##Hardware##
 The robot implements the following hardware:
 
  - Particle photon: all robot controls and logic
