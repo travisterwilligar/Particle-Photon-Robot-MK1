@@ -15,7 +15,7 @@ MK1 has the following behaviors:
  7. **Detect impact**: occasionally, the robot's ultrasonic range finders won't respond to objects made of cloth (couches, curtains etc) and will not detect the presence of an obstacle. If the robot makes contact with another object as registered by the accelerometer, the detect impact command forces the robot to reverse and then change direction.
  8. **Light control**: uses one of three photoresistors to allow the user to control the robot using a flashlight (or other bright light source).
  9. **Follow walls**: uses an additional left-facing ultrasonic range finder to help the robot follow the perimeter of the room.
- 10. **Cruise**: commands the robot to drive straight unless any higher-level behavior is triggered.
+ 10. **Autopilot (Cruise)**: commands the robot to drive straight unless any higher-level behavior is triggered.
  11. **Headlights**: turns the headlights on/off or changes color depending on selected mode.
  12. **Sirens**: plays a beeping sound and changes the headlights an alternating red/white color when an obstacle is detected.
 
