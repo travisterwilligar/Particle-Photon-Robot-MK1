@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <title>MK1 Remote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="MK1 Remote">
+    <link rel="apple-touch-icon" sizes="120x120" href="img/ios-icon.png">
+    <link rel="apple-touch-startup-image" href="/startup.png">
+    <link href="img/splash-image.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" rel="apple-touch-startup-image">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+
+      var deviceId = '34003a000547343138333038';
+      var accessToken = '295643324e02c0de1efdb5e3a91b45cb1ec9a284'
+      var moveUrl = 'https://api.particle.io/v1/devices/' + deviceId + '/move?access_token=' + accessToken;
+      var modeUrl = 'https://api.particle.io/v1/devices/' + deviceId + '/mode?access_token=' + accessToken;
+
+      $(document).on('touchmove', function(e) {
+        e.preventDefault();
+      });
+
+      $(document).keyup(function(e) {
+        switch(e.which) {
+          case 37: // left
+          $.post( moveUrl, { move: "l"} );
+          break;
+
+          case 38: // up
+          $.post( moveUrl, { move: "f"} );
+          break;
+
+          case 39: // right
+          $.post( moveUrl, { move: "r"} );
+          break;
+
+          case 40: // down
+          $.post( moveUrl, { move: "b"} );
+          break;
+
+          default:
+          $.post( moveUrl, { move: "z"} );
+          return;
+        }
+        e.preventDefault();
+      });
+
+      $(document).on('touchstart', '.arrow--left', function(){
+        $.post( moveUrl, { move: "l"} );
+        console.log("forward");
+      });
+      $(document).on('touchstart', '.arrow--right', function(){
+        $.post( moveUrl, { move: "r"} );
+      });
+      $(document).on('touchstart', '.arrow--up', function(){
+        $.post( moveUrl, { move: "f"} );
+      });
+      $(document).on('touchstart', '.arrow--down', function(){
+        $.post( moveUrl, { move: "b"} );
+      });
+      $(document).on('touchstart', '.stop', function(){
+        $.post( moveUrl, { move: "z"} );
+      });
+      $(document).on('touchstart', '.button', function(){
+        $.post( moveUrl, { move: "c"} );
+      });
+
+      $(document).on('touchstart', '.highlight', function(){
+        $('.highlight').removeClass('selected');
+        $(this).addClass('selected');
+        //$('.mode-selector').removeClass('enabled');
+      });
+
+      $(document).on('touchstart', '.arrow.arrow--down.highlight', function(){
+          setTimeout(function(){
+            $('.arrow.arrow--down.highlight').removeClass('selected');
+            $('.stop').addClass('selected');
+          }, 650);
+      });
+
+      $(document).on('touchstart', '.mode-selector__mode', function(){
+        $('.mode-selector__mode').removeClass('selected');
+        $(this).addClass('selected');
+      });
+
+      $(document).on('touchstart', '.mode-selector__mode.avoid-obstacles', function(){
+        $.post( modeUrl, { mode: "0"} );
+      });
+      $(document).on('touchstart', '.mode-selector__mode.follow-lights', function(){
+        $.post( modeUrl, { mode: "1"} );
+      });
+      $(document).on('touchstart', '.mode-selector__mode.follow-walls', function(){
+        $.post( modeUrl, { mode: "2"} );
+      });
+    //  $('.autopilot').click(function(){
+        $('.mode-selector').addClass('enabled');
+      //});
+
+    });
+    </script>
+
+    <style>
+      html{
+        background-image: linear-gradient(-180deg, #3322A5 0%, #411461 100%);
+        height: 100%;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+      }
+      body{
+        text-align: center;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        overflow: hidden;
+        min-height: 100%;
+        max-height: 100%;
+        height: 100%;
+        overflow: hidden;
+        padding: 0 25px;
+        margin: 0;
+        font-family: "Helvetica Neue";
+        font-weight: 100;
+        letter-spacing: 2.5px;
+      }
+      .control-wrapper{
+        display: flex;
+        justify-content: space-between;
+        margin: 55px 0;
+      }
+      .arrow{
+        display: block;
+        position: relative;
+        height: 84px;
+        width: 84px;
+        max-width: height: 84px;
+        max-width: 84px;
+        min-width: height: 84px;
+        min-width: 84px;
+        background-image: url(img/chevron.svg);
+        background-size: 84px 42px;
+        background-position: 0 50%;
+        background-repeat: no-repeat;
+        opacity: 0.3;
+      }
+      .arrow.arrow--up{
+        margin: 0 auto;
+        margin-top: 20px;
+      }
+      .arrow.arrow--left{
+        transform: rotate(-90deg);
+      }
+      .arrow.arrow--right{
+        transform: rotate(90deg);
+      }
+      .arrow.arrow--down{
+        margin: 0 auto;
+        transform: rotate(180deg);
+      }
+      .stop{
+        border-radius: 50%;
+        border: 1px solid #fff;
+        position: relative;
+        min-height: 72px;
+        min-width: 72px;
+        max-height: 72px;
+        max-width: 72px;
+        opacity: 0.3;
+      }
+      .stop__inner{
+        height: 24px;
+        width: 24px;
+        border: 1px solid #fff;
+        margin: 0 auto;
+        margin-top: 24px;
+        background-color: #fff;
+      }
+      .stop.selected{
+        background-color: rgba(0,0,0,0.2);
+        transition: background-color 0.5s ease-out;
+      }
+      .button{
+        width: 100%;
+        margin: 0 auto;
+        height: 70px;
+        line-height: 70px;
+        margin-top: 20px;
+        text-align: center;
+        border: 1px solid #fff;
+        color: #fff;
+        display: block;
+        border-radius: 8px;
+        font-size: 24px;
+        opacity: 0.3;
+      }
+      .button.selected{
+        background-color: rgba(0,0,0,0.2);
+        transition: opacity 0.5s ease-out, background-color 0.5s ease-out;
+      }
+      .button.selected, .stop.selected, .arrow.selected{
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+      }
+      .mode-selector{
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        margin-top: 30px;
+        transition: all 0.5s ease-out;
+        opacity: 0;
+      }
+      .mode-selector.enabled{
+        opacity: 1;
+      }
+      .mode-selector__mode{
+        display: block;
+        text-align: center;
+        line-height: 25px;
+        font-size: 24px;
+        color: #fff;
+        opacity: 0.3;
+        margin: 25px;
+
+      }
+      .mode-selector__mode.selected{
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+      }
+    </style>
+
+  </head>
+  <body>
+
+      <div class="arrow arrow--up highlight"></div>
+      <div class="control-wrapper">
+        <div class="arrow arrow--left highlight"></div>
+        <div class="stop highlight">
+          <div class="stop__inner"></div>
+        </div>
+        <div class="arrow arrow--right highlight"></div>
+      </div>
+      <div class="arrow arrow--down highlight"></div>
+
+      <div class="button highlight autopilot">Autopilot</div>
+
+      <div class="mode-selector">
+        <div class="mode-selector__mode avoid-obstacles selected">
+          Avoid Obstacles
+        </div>
+        <div class="mode-selector__mode follow-lights">
+          Follow Lights
+        </div>
+        <div class="mode-selector__mode follow-walls">
+          Follow Walls
+        </div>
+      </div>
+
+  </body>
+</html>
