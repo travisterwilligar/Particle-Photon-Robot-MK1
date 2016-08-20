@@ -25,16 +25,15 @@ void Motors::reverse(int speed){
   move(2, speed, -1);
 }
 void Motors::right(int speed){
-  move(1, 255, 1);
-  move(2, 255, -1);
+  move(1, speed, 1);
+  move(2, speed, -1);
 }
 void Motors::left(int speed){
-  move(1, 255, -1);
-  move(2, 255, 1);
+  move(1, speed, -1);
+  move(2, speed, 1);
 }
 void Motors::stop(){
   digitalWrite(STBY, LOW);
-  //digitalWrite(D4, LOW);
 }
 void Motors::move(int motor, int speed, int direction){
   digitalWrite(STBY, HIGH); //disable standby
