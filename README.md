@@ -2,6 +2,8 @@
 
 Mk1 is a behavior-based robotic rover that implements a simplified [subsumption architecture](https://en.wikipedia.org/wiki/Subsumption_architecture).
 
+![Robot](https://raw.githubusercontent.com/travisterwilligar/Particle-Photon-Robot-MK1/master/mk1.png)
+
 ## Behaviors ##
 
 MK1 has the following behaviors:
