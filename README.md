@@ -1,4 +1,4 @@
-#Particle Photon Robot MK1
+# Particle Photon Robot MK1
 
 Mk1 is a behavior-based robotic rover that implements a simplified [subsumption architecture](https://en.wikipedia.org/wiki/Subsumption_architecture).
 
@@ -21,7 +21,7 @@ MK1 has the following behaviors:
  11. **Headlights**: turns the headlights on/off or changes color depending on selected mode.
  12. **Sirens**: plays a beeping sound and changes the headlights an alternating red/white color when an obstacle is detected.
 
-## Control Modes ##
+## Control Modes
 Modes are higher-level actions that implement a subset of the available behaviors.
 
  1. Avoid obstacles: robot roams around avoiding obstacles, cliffs, and tries to find the best direction to travel based on avoiding the fewest number of obstacles. Behaviors:
@@ -56,7 +56,7 @@ Modes are higher-level actions that implement a subset of the available behavior
 	 - Headlights
 	 - Sirens
 
-##Hardware##
+## Hardware
 The robot implements the following hardware:
 
  - Particle photon: all robot controls and logic
